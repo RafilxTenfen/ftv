@@ -106,15 +106,32 @@ function gerarPartidas(numPartidas = 10) {
   return { partidas, jogosPorTime, confrontosRealizados, maxEspera }
 }
 
+const MAX_HISTORICO = 3
+
 function App() {
   const [times, setTimes] = useState(TIMES_FIXOS)
-  const [resultado, setResultado] = useState(null)
   const [misturado, setMisturado] = useState(false)
+  const [historico, setHistorico] = useState([])
+  const [indiceAtual, setIndiceAtual] = useState(0)
 
-  const nomeTime = (num) => `${times[num][0]}/${times[num][1]}`
+  const resultadoAtual = historico[indiceAtual] || null
+
+  const nomeTime = (num) => {
+    const t = resultadoAtual?.times || times
+    return `${t[num][0]}/${t[num][1]}`
+  }
 
   const handleGerar = () => {
-    setResultado(gerarPartidas(10))
+    const novoResultado = {
+      times: { ...times },
+      misturado,
+      ...gerarPartidas(10)
+    }
+    setHistorico(prev => {
+      const novo = [novoResultado, ...prev].slice(0, MAX_HISTORICO)
+      return novo
+    })
+    setIndiceAtual(0)
   }
 
   const handleMisturar = () => {
@@ -128,18 +145,19 @@ function App() {
     }
     setTimes(novosTimes)
     setMisturado(true)
-    setResultado(null)
   }
 
   const handleTimesFixos = () => {
     setTimes(TIMES_FIXOS)
     setMisturado(false)
-    setResultado(null)
   }
 
   useEffect(() => {
     handleGerar()
   }, [])
+
+  const timesExibidos = resultadoAtual?.times || times
+  const isMisturadoExibido = resultadoAtual?.misturado || false
 
   return (
     <div className="container">
@@ -147,14 +165,14 @@ function App() {
       <p className="subtitle">Quarta-feira - 19h às 21h</p>
 
       <div className="section">
-        <h2>Times {misturado && <span className="badge-misturado">Misturados</span>}</h2>
+        <h2>Times {isMisturadoExibido && <span className="badge-misturado">Misturados</span>}</h2>
         <div className="times-grid">
           {[1, 2, 3, 4].map(num => (
             <div key={num} className="time-item">
               <span className="time-number">{num}</span>
               <span className="time-players">
-                <strong>{times[num][0]}</strong> <span className="pos">(D)</span> /{' '}
-                <strong>{times[num][1]}</strong> <span className="pos">(E)</span>
+                <strong>{timesExibidos[num][0]}</strong> <span className="pos">(D)</span> /{' '}
+                <strong>{timesExibidos[num][1]}</strong> <span className="pos">(E)</span>
               </span>
             </div>
           ))}
@@ -175,11 +193,33 @@ function App() {
         Gerar Partidas
       </button>
 
-      {resultado && (
+      {historico.length > 1 && (
+        <div className="historico-nav">
+          <button
+            className="btn-nav"
+            onClick={() => setIndiceAtual(i => Math.min(i + 1, historico.length - 1))}
+            disabled={indiceAtual >= historico.length - 1}
+          >
+            ← Anterior
+          </button>
+          <span className="historico-info">
+            {indiceAtual === 0 ? 'Atual' : `Versão ${historico.length - indiceAtual}/${historico.length}`}
+          </span>
+          <button
+            className="btn-nav"
+            onClick={() => setIndiceAtual(i => Math.max(i - 1, 0))}
+            disabled={indiceAtual <= 0}
+          >
+            Próximo →
+          </button>
+        </div>
+      )}
+
+      {resultadoAtual && (
         <>
           <div className="section">
             <h2>Cronograma</h2>
-            {resultado.partidas.map((partida, i) => {
+            {resultadoAtual.partidas.map((partida, i) => {
               const [t1, t2] = partida
               const descansando = [1, 2, 3, 4].filter(t => !partida.includes(t))
               return (
@@ -205,7 +245,7 @@ function App() {
             <div className="stats-grid">
               {[1, 2, 3, 4].map(t => (
                 <div key={t} className="stat-card">
-                  <div className="stat-value">{resultado.jogosPorTime[t]}</div>
+                  <div className="stat-value">{resultadoAtual.jogosPorTime[t]}</div>
                   <div className="stat-label">{nomeTime(t)}</div>
                 </div>
               ))}
@@ -213,7 +253,7 @@ function App() {
 
             <h3>Confrontos</h3>
             <div className="confrontos-grid">
-              {Object.entries(resultado.confrontosRealizados).map(([key, count]) => {
+              {Object.entries(resultadoAtual.confrontosRealizados).map(([key, count]) => {
                 const [t1, t2] = key.split(',').map(Number)
                 return (
                   <div key={key} className="confronto-item">
@@ -230,7 +270,7 @@ function App() {
                 <div key={t} className="confronto-item">
                   <span>{nomeTime(t)}</span>
                   <span className="check-ok">
-                    {resultado.maxEspera[t]} partidas {resultado.maxEspera[t] <= 2 ? '✓' : '✗'}
+                    {resultadoAtual.maxEspera[t]} partidas {resultadoAtual.maxEspera[t] <= 2 ? '✓' : '✗'}
                   </span>
                 </div>
               ))}

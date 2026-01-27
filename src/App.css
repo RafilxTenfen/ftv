@@ -244,6 +244,44 @@ h1 {
   vertical-align: middle;
 }
 
+.historico-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  margin-bottom: 20px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+
+.btn-nav {
+  padding: 8px 16px;
+  font-size: 0.9em;
+  background: rgba(100, 255, 218, 0.15);
+  color: #64ffda;
+  border: 1px solid rgba(100, 255, 218, 0.3);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-nav:hover:not(:disabled) {
+  background: rgba(100, 255, 218, 0.25);
+}
+
+.btn-nav:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.historico-info {
+  color: #ccd6f6;
+  font-size: 0.95em;
+  min-width: 100px;
+  text-align: center;
+}
+
 @media (max-width: 600px) {
   h1 {
     font-size: 1.8em;
