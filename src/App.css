@@ -1,0 +1,220 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  min-height: 100vh;
+  color: #fff;
+}
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+h1 {
+  text-align: center;
+  font-size: 2.5em;
+  margin-bottom: 5px;
+}
+
+.subtitle {
+  text-align: center;
+  color: #8892b0;
+  margin-bottom: 30px;
+}
+
+.section {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 15px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.section h2 {
+  color: #64ffda;
+  margin-bottom: 15px;
+}
+
+.section h3 {
+  color: #ccd6f6;
+  margin: 20px 0 15px;
+  font-size: 1em;
+}
+
+.times-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.time-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 15px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+}
+
+.time-number {
+  background: #64ffda;
+  color: #1a1a2e;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  margin-right: 15px;
+  flex-shrink: 0;
+}
+
+.time-players {
+  font-size: 1em;
+}
+
+.pos {
+  color: #8892b0;
+  font-size: 0.85em;
+}
+
+.btn-gerar {
+  display: block;
+  width: 100%;
+  padding: 15px;
+  font-size: 1.2em;
+  background: linear-gradient(135deg, #64ffda 0%, #00bfa5 100%);
+  color: #1a1a2e;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: transform 0.2s, box-shadow 0.2s;
+  margin-bottom: 20px;
+}
+
+.btn-gerar:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 20px rgba(100, 255, 218, 0.4);
+}
+
+.btn-gerar:active {
+  transform: translateY(0);
+}
+
+.partida {
+  display: flex;
+  align-items: flex-start;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  padding: 15px;
+  margin-bottom: 10px;
+  border-left: 4px solid #64ffda;
+}
+
+.partida-numero {
+  background: #64ffda;
+  color: #1a1a2e;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-weight: bold;
+  margin-right: 15px;
+  flex-shrink: 0;
+}
+
+.partida-info {
+  flex: 1;
+}
+
+.partida-times {
+  font-size: 1.1em;
+  font-weight: 500;
+  margin-bottom: 5px;
+}
+
+.vs {
+  color: #ff6b6b;
+  margin: 0 8px;
+  font-weight: bold;
+}
+
+.partida-descansam {
+  color: #8892b0;
+  font-size: 0.9em;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 15px;
+}
+
+.stat-card {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  padding: 15px;
+  text-align: center;
+}
+
+.stat-value {
+  font-size: 2em;
+  font-weight: bold;
+  color: #64ffda;
+}
+
+.stat-label {
+  color: #8892b0;
+  font-size: 0.9em;
+  margin-top: 5px;
+}
+
+.confrontos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+}
+
+.confronto-item {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 12px 15px;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.confronto-count {
+  background: #64ffda;
+  color: #1a1a2e;
+  padding: 3px 10px;
+  border-radius: 10px;
+  font-weight: bold;
+  font-size: 0.9em;
+}
+
+.check-ok {
+  color: #64ffda;
+}
+
+@media (max-width: 600px) {
+  h1 {
+    font-size: 1.8em;
+  }
+
+  .partida-times {
+    font-size: 0.95em;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .confrontos-grid {
+    grid-template-columns: 1fr;
+  }
+}
