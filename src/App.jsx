@@ -113,6 +113,7 @@ function App() {
   const [misturado, setMisturado] = useState(false)
   const [historico, setHistorico] = useState([])
   const [indiceAtual, setIndiceAtual] = useState(0)
+  const [contador, setContador] = useState(0)
 
   const resultadoAtual = historico[indiceAtual] || null
 
@@ -122,7 +123,9 @@ function App() {
   }
 
   const handleGerar = () => {
+    const novoNumero = contador + 1
     const novoResultado = {
+      numero: novoNumero,
       times: { ...times },
       misturado,
       ...gerarPartidas(10)
@@ -132,6 +135,7 @@ function App() {
       return novo
     })
     setIndiceAtual(0)
+    setContador(novoNumero)
   }
 
   const handleMisturar = () => {
@@ -193,25 +197,18 @@ function App() {
         Gerar Partidas
       </button>
 
-      {historico.length > 1 && (
+      {historico.length > 0 && (
         <div className="historico-nav">
-          <button
-            className="btn-nav"
-            onClick={() => setIndiceAtual(i => Math.min(i + 1, historico.length - 1))}
-            disabled={indiceAtual >= historico.length - 1}
-          >
-            ← Anterior
-          </button>
-          <span className="historico-info">
-            {indiceAtual === 0 ? 'Atual' : `Versão ${historico.length - indiceAtual}/${historico.length}`}
-          </span>
-          <button
-            className="btn-nav"
-            onClick={() => setIndiceAtual(i => Math.max(i - 1, 0))}
-            disabled={indiceAtual <= 0}
-          >
-            Próximo →
-          </button>
+          <span className="historico-label">Geração:</span>
+          {[...historico].reverse().map((item, i) => (
+            <button
+              key={item.numero}
+              className={`btn-historico ${indiceAtual === historico.length - 1 - i ? 'active' : ''}`}
+              onClick={() => setIndiceAtual(historico.length - 1 - i)}
+            >
+              {item.numero}
+            </button>
+          ))}
         </div>
       )}
 
