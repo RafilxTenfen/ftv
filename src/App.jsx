@@ -1,15 +1,23 @@
 import { useState, useEffect } from 'react'
 import './App.css'
 
-const TIMES = {
+const TIMES_FIXOS = {
   1: ["Gregory", "Fernando"],
   2: ["Rafa", "Carlinhos"],
   3: ["Tiago", "Lucas"],
   4: ["Dudu", "Cavalo"]
 }
 
-function nomeTime(num) {
-  return `${TIMES[num][0]}/${TIMES[num][1]}`
+const DIREITOS = ["Gregory", "Rafa", "Tiago", "Dudu"]
+const ESQUERDOS = ["Fernando", "Carlinhos", "Lucas", "Cavalo"]
+
+function shuffle(array) {
+  const arr = [...array]
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[arr[i], arr[j]] = [arr[j], arr[i]]
+  }
+  return arr
 }
 
 function getCombinations(arr, size) {
@@ -99,10 +107,34 @@ function gerarPartidas(numPartidas = 10) {
 }
 
 function App() {
+  const [times, setTimes] = useState(TIMES_FIXOS)
   const [resultado, setResultado] = useState(null)
+  const [misturado, setMisturado] = useState(false)
+
+  const nomeTime = (num) => `${times[num][0]}/${times[num][1]}`
 
   const handleGerar = () => {
     setResultado(gerarPartidas(10))
+  }
+
+  const handleMisturar = () => {
+    const direitosShuffled = shuffle(DIREITOS)
+    const esquerdosShuffled = shuffle(ESQUERDOS)
+    const novosTimes = {
+      1: [direitosShuffled[0], esquerdosShuffled[0]],
+      2: [direitosShuffled[1], esquerdosShuffled[1]],
+      3: [direitosShuffled[2], esquerdosShuffled[2]],
+      4: [direitosShuffled[3], esquerdosShuffled[3]]
+    }
+    setTimes(novosTimes)
+    setMisturado(true)
+    setResultado(null)
+  }
+
+  const handleTimesFixos = () => {
+    setTimes(TIMES_FIXOS)
+    setMisturado(false)
+    setResultado(null)
   }
 
   useEffect(() => {
@@ -115,17 +147,27 @@ function App() {
       <p className="subtitle">Quarta-feira - 19h às 21h</p>
 
       <div className="section">
-        <h2>Times</h2>
+        <h2>Times {misturado && <span className="badge-misturado">Misturados</span>}</h2>
         <div className="times-grid">
           {[1, 2, 3, 4].map(num => (
             <div key={num} className="time-item">
               <span className="time-number">{num}</span>
               <span className="time-players">
-                <strong>{TIMES[num][0]}</strong> <span className="pos">(D)</span> /{' '}
-                <strong>{TIMES[num][1]}</strong> <span className="pos">(E)</span>
+                <strong>{times[num][0]}</strong> <span className="pos">(D)</span> /{' '}
+                <strong>{times[num][1]}</strong> <span className="pos">(E)</span>
               </span>
             </div>
           ))}
+        </div>
+        <div className="btn-group">
+          <button className="btn-secondary" onClick={handleMisturar}>
+            Misturar Times
+          </button>
+          {misturado && (
+            <button className="btn-secondary btn-outline" onClick={handleTimesFixos}>
+              Times Fixos
+            </button>
+          )}
         </div>
       </div>
 
