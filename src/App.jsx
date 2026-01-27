@@ -37,11 +37,17 @@ function getCombinations(arr, size) {
   return result
 }
 
-function gerarPartidas(numPartidas = 10) {
-  const todosConfrontos = getCombinations([1, 2, 3, 4], 2)
+function gerarPartidas(timesAtivos, numPartidas = 10) {
+  if (timesAtivos.length < 2) return null
+
+  const todosConfrontos = getCombinations(timesAtivos, 2)
   const partidas = []
-  const jogosPorTime = { 1: 0, 2: 0, 3: 0, 4: 0 }
-  const ultimaPartida = { 1: -3, 2: -3, 3: -3, 4: -3 }
+  const jogosPorTime = {}
+  const ultimaPartida = {}
+  timesAtivos.forEach(t => {
+    jogosPorTime[t] = 0
+    ultimaPartida[t] = -3
+  })
   const confrontosRealizados = {}
   todosConfrontos.forEach(c => confrontosRealizados[c.join(',')] = 0)
 
@@ -49,14 +55,14 @@ function gerarPartidas(numPartidas = 10) {
     let confrontosValidos = []
 
     for (const confronto of todosConfrontos) {
-      const outros = [1, 2, 3, 4].filter(t => !confronto.includes(t))
+      const outros = timesAtivos.filter(t => !confronto.includes(t))
       const esperaOutros = outros.map(t => i - ultimaPartida[t])
       if (esperaOutros.some(e => e >= 3)) continue
       confrontosValidos.push(confronto)
     }
 
     if (confrontosValidos.length === 0) {
-      const timesEsperando = [1, 2, 3, 4].filter(t => i - ultimaPartida[t] >= 3)
+      const timesEsperando = timesAtivos.filter(t => i - ultimaPartida[t] >= 3)
       if (timesEsperando.length > 0) {
         confrontosValidos = todosConfrontos.filter(c =>
           timesEsperando.some(t => c.includes(t))
@@ -87,12 +93,16 @@ function gerarPartidas(numPartidas = 10) {
     confrontosRealizados[confrontoEscolhido.join(',')]++
   }
 
-  const maxEspera = { 1: 0, 2: 0, 3: 0, 4: 0 }
-  const ultima = { 1: -1, 2: -1, 3: -1, 4: -1 }
+  const maxEspera = {}
+  const ultima = {}
+  timesAtivos.forEach(t => {
+    maxEspera[t] = 0
+    ultima[t] = -1
+  })
 
   partidas.forEach((partida, i) => {
     const [t1, t2] = partida
-    ;[1, 2, 3, 4].forEach(t => {
+    timesAtivos.forEach(t => {
       if (t === t1 || t === t2) {
         if (ultima[t] >= 0) {
           const espera = i - ultima[t] - 1
@@ -103,7 +113,7 @@ function gerarPartidas(numPartidas = 10) {
     })
   })
 
-  return { partidas, jogosPorTime, confrontosRealizados, maxEspera }
+  return { partidas, jogosPorTime, confrontosRealizados, maxEspera, timesAtivos }
 }
 
 const MAX_HISTORICO = 3
@@ -114,21 +124,34 @@ function App() {
   const [historico, setHistorico] = useState([])
   const [indiceAtual, setIndiceAtual] = useState(0)
   const [contador, setContador] = useState(0)
+  const [timesSelecionados, setTimesSelecionados] = useState([1, 2, 3, 4])
 
   const resultadoAtual = historico[indiceAtual] || null
 
-  const nomeTime = (num) => {
-    const t = resultadoAtual?.times || times
-    return `${t[num][0]}/${t[num][1]}`
+
+  const toggleTime = (num) => {
+    setTimesSelecionados(prev => {
+      if (prev.includes(num)) {
+        if (prev.length <= 2) return prev
+        return prev.filter(t => t !== num)
+      } else {
+        return [...prev, num].sort()
+      }
+    })
   }
 
-  const handleGerar = () => {
+  const gerarComTimes = (timesParaUsar, isMisturado) => {
+    if (timesSelecionados.length < 2) return
+
     const novoNumero = contador + 1
+    const resultado = gerarPartidas(timesSelecionados, 10)
+    if (!resultado) return
+
     const novoResultado = {
       numero: novoNumero,
-      times: { ...times },
-      misturado,
-      ...gerarPartidas(10)
+      times: { ...timesParaUsar },
+      misturado: isMisturado,
+      ...resultado
     }
     setHistorico(prev => {
       const novo = [novoResultado, ...prev].slice(0, MAX_HISTORICO)
@@ -136,6 +159,10 @@ function App() {
     })
     setIndiceAtual(0)
     setContador(novoNumero)
+  }
+
+  const handleGerar = () => {
+    gerarComTimes(times, misturado)
   }
 
   const handleMisturar = () => {
@@ -149,52 +176,81 @@ function App() {
     }
     setTimes(novosTimes)
     setMisturado(true)
+    gerarComTimes(novosTimes, true)
   }
 
   const handleTimesFixos = () => {
     setTimes(TIMES_FIXOS)
     setMisturado(false)
+    gerarComTimes(TIMES_FIXOS, false)
   }
 
   useEffect(() => {
     handleGerar()
   }, [])
 
-  const timesExibidos = resultadoAtual?.times || times
-  const isMisturadoExibido = resultadoAtual?.misturado || false
+  useEffect(() => {
+    if (resultadoAtual) {
+      setTimesSelecionados(resultadoAtual.timesAtivos)
+      setTimes(resultadoAtual.times)
+      setMisturado(resultadoAtual.misturado)
+    }
+  }, [indiceAtual])
+
+  const timesDoResultado = resultadoAtual?.times || times
+  const timesAtivosExibidos = resultadoAtual?.timesAtivos || timesSelecionados
+
+  const nomeTimeResultado = (num) => {
+    return `${timesDoResultado[num][0]}/${timesDoResultado[num][1]}`
+  }
 
   return (
     <div className="container">
-      <h1>Futevôlei</h1>
+      <h1>Futevôlei Cidade Alta</h1>
       <p className="subtitle">Quarta-feira - 19h às 21h</p>
 
       <div className="section">
-        <h2>Times {isMisturadoExibido && <span className="badge-misturado">Misturados</span>}</h2>
+        <h2>Times {resultadoAtual?.misturado && <span className="badge-misturado">Misturados</span>}</h2>
         <div className="times-grid">
           {[1, 2, 3, 4].map(num => (
-            <div key={num} className="time-item">
+            <div
+              key={num}
+              className={`time-item ${timesAtivosExibidos.includes(num) ? 'selected' : 'disabled'}`}
+              onClick={() => toggleTime(num)}
+            >
+              <span className={`time-checkbox ${timesAtivosExibidos.includes(num) ? 'checked' : ''}`}>
+                {timesAtivosExibidos.includes(num) ? '✓' : ''}
+              </span>
               <span className="time-number">{num}</span>
               <span className="time-players">
-                <strong>{timesExibidos[num][0]}</strong> <span className="pos">(D)</span> /{' '}
-                <strong>{timesExibidos[num][1]}</strong> <span className="pos">(E)</span>
+                <strong>{timesDoResultado[num][0]}</strong> <span className="pos">(D)</span> /{' '}
+                <strong>{timesDoResultado[num][1]}</strong> <span className="pos">(E)</span>
               </span>
             </div>
           ))}
         </div>
         <div className="btn-group">
-          <button className="btn-secondary" onClick={handleMisturar}>
-            Misturar Times
+          <button
+            className={`btn-secondary ${!resultadoAtual?.misturado ? 'btn-active' : 'btn-outline'}`}
+            onClick={handleTimesFixos}
+          >
+            Times Fixos
           </button>
-          {misturado && (
-            <button className="btn-secondary btn-outline" onClick={handleTimesFixos}>
-              Times Fixos
-            </button>
-          )}
+          <button
+            className={`btn-secondary ${resultadoAtual?.misturado ? 'btn-active' : 'btn-outline'}`}
+            onClick={handleMisturar}
+          >
+            Times Misturados
+          </button>
         </div>
       </div>
 
-      <button className="btn-gerar" onClick={handleGerar}>
-        Gerar Partidas
+      <button
+        className="btn-gerar"
+        onClick={handleGerar}
+        disabled={timesSelecionados.length < 2}
+      >
+        Gerar Partidas {timesSelecionados.length < 2 && '(mín. 2 times)'}
       </button>
 
       {historico.length > 0 && (
@@ -218,17 +274,25 @@ function App() {
             <h2>Cronograma</h2>
             {resultadoAtual.partidas.map((partida, i) => {
               const [t1, t2] = partida
-              const descansando = [1, 2, 3, 4].filter(t => !partida.includes(t))
+              const descansando = timesAtivosExibidos.filter(t => !partida.includes(t))
+              const horaInicio = 19
+              const minutoInicio = i * 15
+              const hora = horaInicio + Math.floor(minutoInicio / 60)
+              const minuto = minutoInicio % 60
+              const horario = `${hora}:${minuto.toString().padStart(2, '0')}`
               return (
                 <div key={i} className="partida">
                   <span className="partida-numero">{i + 1}</span>
+                  <span className="partida-horario">{horario}</span>
                   <div className="partida-info">
                     <div className="partida-times">
-                      {nomeTime(t1)} <span className="vs">vs</span> {nomeTime(t2)}
+                      {nomeTimeResultado(t1)} <span className="vs">vs</span> {nomeTimeResultado(t2)}
                     </div>
-                    <div className="partida-descansam">
-                      Descansam: {nomeTime(descansando[0])} e {nomeTime(descansando[1])}
-                    </div>
+                    {descansando.length > 0 && (
+                      <div className="partida-descansam">
+                        Descansam: {descansando.map(t => nomeTimeResultado(t)).join(' e ')}
+                      </div>
+                    )}
                   </div>
                 </div>
               )
@@ -240,10 +304,10 @@ function App() {
 
             <h3>Jogos por Time</h3>
             <div className="stats-grid">
-              {[1, 2, 3, 4].map(t => (
+              {timesAtivosExibidos.map(t => (
                 <div key={t} className="stat-card">
                   <div className="stat-value">{resultadoAtual.jogosPorTime[t]}</div>
-                  <div className="stat-label">{nomeTime(t)}</div>
+                  <div className="stat-label">{nomeTimeResultado(t)}</div>
                 </div>
               ))}
             </div>
@@ -254,24 +318,28 @@ function App() {
                 const [t1, t2] = key.split(',').map(Number)
                 return (
                   <div key={key} className="confronto-item">
-                    <span>{nomeTime(t1)} vs {nomeTime(t2)}</span>
+                    <span>{nomeTimeResultado(t1)} vs {nomeTimeResultado(t2)}</span>
                     <span className="confronto-count">{count}x</span>
                   </div>
                 )
               })}
             </div>
 
-            <h3>Espera Máxima</h3>
-            <div className="confrontos-grid">
-              {[1, 2, 3, 4].map(t => (
-                <div key={t} className="confronto-item">
-                  <span>{nomeTime(t)}</span>
-                  <span className="check-ok">
-                    {resultadoAtual.maxEspera[t]} partidas {resultadoAtual.maxEspera[t] <= 2 ? '✓' : '✗'}
-                  </span>
+            {timesAtivosExibidos.length > 2 && (
+              <>
+                <h3>Espera Máxima</h3>
+                <div className="confrontos-grid">
+                  {timesAtivosExibidos.map(t => (
+                    <div key={t} className="confronto-item">
+                      <span>{nomeTimeResultado(t)}</span>
+                      <span className="check-ok">
+                        {resultadoAtual.maxEspera[t]} partidas {resultadoAtual.maxEspera[t] <= 2 ? '✓' : '✗'}
+                      </span>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              </>
+            )}
           </div>
         </>
       )}
