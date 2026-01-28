@@ -1,133 +1,61 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import './App.css'
+import {
+  TIMES_FIXOS,
+  DIREITOS,
+  ESQUERDOS,
+  shuffle,
+  gerarPartidas,
+  calcularHorario
+} from './utils'
 
-const TIMES_FIXOS = {
-  1: ["Gregory", "Fernando"],
-  2: ["Rafa", "Carlinhos"],
-  3: ["Tiago", "Lucas"],
-  4: ["Dudu", "Cavalo"]
-}
+const MAX_HISTORICO = 5
+const STORAGE_KEY = 'ftv-jogadores'
 
-const DIREITOS = ["Gregory", "Rafa", "Tiago", "Dudu"]
-const ESQUERDOS = ["Fernando", "Carlinhos", "Lucas", "Cavalo"]
-
-function shuffle(array) {
-  const arr = [...array]
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
-    ;[arr[i], arr[j]] = [arr[j], arr[i]]
-  }
-  return arr
-}
-
-function getCombinations(arr, size) {
-  const result = []
-  function combine(start, combo) {
-    if (combo.length === size) {
-      result.push([...combo])
-      return
-    }
-    for (let i = start; i < arr.length; i++) {
-      combo.push(arr[i])
-      combine(i + 1, combo)
-      combo.pop()
+function carregarJogadores() {
+  const salvo = localStorage.getItem(STORAGE_KEY)
+  if (salvo) {
+    try {
+      return JSON.parse(salvo)
+    } catch {
+      return null
     }
   }
-  combine(0, [])
-  return result
+  return null
 }
 
-function gerarPartidas(timesAtivos, numPartidas = 10) {
-  if (timesAtivos.length < 2) return null
+function salvarJogadores(jogadores) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(jogadores))
+}
 
-  const todosConfrontos = getCombinations(timesAtivos, 2)
-  const partidas = []
-  const jogosPorTime = {}
-  const ultimaPartida = {}
-  timesAtivos.forEach(t => {
-    jogosPorTime[t] = 0
-    ultimaPartida[t] = -3
-  })
-  const confrontosRealizados = {}
-  todosConfrontos.forEach(c => confrontosRealizados[c.join(',')] = 0)
-
-  for (let i = 0; i < numPartidas; i++) {
-    let confrontosValidos = []
-
-    for (const confronto of todosConfrontos) {
-      const outros = timesAtivos.filter(t => !confronto.includes(t))
-      const esperaOutros = outros.map(t => i - ultimaPartida[t])
-      if (esperaOutros.some(e => e >= 3)) continue
-      confrontosValidos.push(confronto)
-    }
-
-    if (confrontosValidos.length === 0) {
-      const timesEsperando = timesAtivos.filter(t => i - ultimaPartida[t] >= 3)
-      if (timesEsperando.length > 0) {
-        confrontosValidos = todosConfrontos.filter(c =>
-          timesEsperando.some(t => c.includes(t))
-        )
-      } else {
-        confrontosValidos = [...todosConfrontos]
-      }
-    }
-
-    confrontosValidos.sort((a, b) => {
-      const scoreA = confrontosRealizados[a.join(',')] * 10 +
-        jogosPorTime[a[0]] + jogosPorTime[a[1]] +
-        Math.random() * 2
-      const scoreB = confrontosRealizados[b.join(',')] * 10 +
-        jogosPorTime[b[0]] + jogosPorTime[b[1]] +
-        Math.random() * 2
-      return scoreA - scoreB
-    })
-
-    const confrontoEscolhido = confrontosValidos[0]
-    partidas.push(confrontoEscolhido)
-
-    const [t1, t2] = confrontoEscolhido
-    jogosPorTime[t1]++
-    jogosPorTime[t2]++
-    ultimaPartida[t1] = i
-    ultimaPartida[t2] = i
-    confrontosRealizados[confrontoEscolhido.join(',')]++
+function criarTimesDeJogadores(jogadores) {
+  return {
+    1: [jogadores.direitos[0], jogadores.esquerdos[0]],
+    2: [jogadores.direitos[1], jogadores.esquerdos[1]],
+    3: [jogadores.direitos[2], jogadores.esquerdos[2]],
+    4: [jogadores.direitos[3], jogadores.esquerdos[3]]
   }
-
-  const maxEspera = {}
-  const ultima = {}
-  timesAtivos.forEach(t => {
-    maxEspera[t] = 0
-    ultima[t] = -1
-  })
-
-  partidas.forEach((partida, i) => {
-    const [t1, t2] = partida
-    timesAtivos.forEach(t => {
-      if (t === t1 || t === t2) {
-        if (ultima[t] >= 0) {
-          const espera = i - ultima[t] - 1
-          maxEspera[t] = Math.max(maxEspera[t], espera)
-        }
-        ultima[t] = i
-      }
-    })
-  })
-
-  return { partidas, jogosPorTime, confrontosRealizados, maxEspera, timesAtivos }
 }
-
-const MAX_HISTORICO = 3
 
 function App() {
-  const [times, setTimes] = useState(TIMES_FIXOS)
+  const jogadoresIniciais = carregarJogadores() || {
+    direitos: [...DIREITOS],
+    esquerdos: [...ESQUERDOS]
+  }
+  const [jogadores, setJogadores] = useState(jogadoresIniciais)
+  const [times, setTimes] = useState(criarTimesDeJogadores(jogadoresIniciais))
   const [misturado, setMisturado] = useState(false)
   const [historico, setHistorico] = useState([])
   const [indiceAtual, setIndiceAtual] = useState(0)
   const [contador, setContador] = useState(0)
   const [timesSelecionados, setTimesSelecionados] = useState([1, 2, 3, 4])
+  const [editando, setEditando] = useState(null)
+  const [editTemp, setEditTemp] = useState({ direito: '', esquerdo: '' })
+  const [preparandoNovo, setPreparandoNovo] = useState(false)
+  const [animando, setAnimando] = useState(false)
+  const inicializado = useRef(false)
 
   const resultadoAtual = historico[indiceAtual] || null
-
 
   const toggleTime = (num) => {
     setTimesSelecionados(prev => {
@@ -159,15 +87,23 @@ function App() {
     })
     setIndiceAtual(0)
     setContador(novoNumero)
+    setPreparandoNovo(false)
   }
 
   const handleGerar = () => {
-    gerarComTimes(times, misturado)
+    const timesParaGerar = preparandoNovo ? times : timesDoResultado
+    const misturadoParaGerar = preparandoNovo ? misturado : (resultadoAtual?.misturado ?? misturado)
+    gerarComTimes(timesParaGerar, misturadoParaGerar)
+  }
+
+  const triggerFade = () => {
+    setAnimando(true)
+    setTimeout(() => setAnimando(false), 300)
   }
 
   const handleMisturar = () => {
-    const direitosShuffled = shuffle(DIREITOS)
-    const esquerdosShuffled = shuffle(ESQUERDOS)
+    const direitosShuffled = shuffle(jogadores.direitos)
+    const esquerdosShuffled = shuffle(jogadores.esquerdos)
     const novosTimes = {
       1: [direitosShuffled[0], esquerdosShuffled[0]],
       2: [direitosShuffled[1], esquerdosShuffled[1]],
@@ -176,29 +112,79 @@ function App() {
     }
     setTimes(novosTimes)
     setMisturado(true)
-    gerarComTimes(novosTimes, true)
+    setPreparandoNovo(true)
+    triggerFade()
   }
 
   const handleTimesFixos = () => {
+    const timesFixosAtuais = criarTimesDeJogadores(jogadores)
+    setTimes(timesFixosAtuais)
+    setMisturado(false)
+    setPreparandoNovo(true)
+    triggerFade()
+  }
+
+  const handleReset = () => {
+    const jogadoresOriginais = {
+      direitos: [...DIREITOS],
+      esquerdos: [...ESQUERDOS]
+    }
+    setJogadores(jogadoresOriginais)
+    salvarJogadores(jogadoresOriginais)
     setTimes(TIMES_FIXOS)
     setMisturado(false)
-    gerarComTimes(TIMES_FIXOS, false)
+    setPreparandoNovo(true)
+    setHistorico(prev => prev.length > 0 ? [prev[0]] : [])
+    setIndiceAtual(0)
+    triggerFade()
+  }
+
+  const iniciarEdicao = (num) => {
+    setEditando(num)
+    setEditTemp({
+      direito: times[num][0],
+      esquerdo: times[num][1]
+    })
+  }
+
+  const cancelarEdicao = () => {
+    setEditando(null)
+    setEditTemp({ direito: '', esquerdo: '' })
+  }
+
+  const salvarEdicao = () => {
+    if (!editando) return
+    const indice = editando - 1
+    const novosJogadores = {
+      direitos: [...jogadores.direitos],
+      esquerdos: [...jogadores.esquerdos]
+    }
+    novosJogadores.direitos[indice] = editTemp.direito.trim() || jogadores.direitos[indice]
+    novosJogadores.esquerdos[indice] = editTemp.esquerdo.trim() || jogadores.esquerdos[indice]
+
+    setJogadores(novosJogadores)
+    salvarJogadores(novosJogadores)
+
+    const novosTimes = { ...times }
+    novosTimes[editando] = [novosJogadores.direitos[indice], novosJogadores.esquerdos[indice]]
+    setTimes(novosTimes)
+
+    setEditando(null)
+    setEditTemp({ direito: '', esquerdo: '' })
   }
 
   useEffect(() => {
-    handleGerar()
+    if (!inicializado.current) {
+      inicializado.current = true
+      handleGerar()
+    }
   }, [])
 
-  useEffect(() => {
-    if (resultadoAtual) {
-      setTimesSelecionados(resultadoAtual.timesAtivos)
-      setTimes(resultadoAtual.times)
-      setMisturado(resultadoAtual.misturado)
-    }
-  }, [indiceAtual])
-
   const timesDoResultado = resultadoAtual?.times || times
-  const timesAtivosExibidos = resultadoAtual?.timesAtivos || timesSelecionados
+  const timesAtivosDoResultado = resultadoAtual?.timesAtivos || timesSelecionados
+
+  const timesExibidos = preparandoNovo ? times : timesDoResultado
+  const misturadoExibido = preparandoNovo ? misturado : (resultadoAtual?.misturado ?? misturado)
 
   const nomeTimeResultado = (num) => {
     return `${timesDoResultado[num][0]}/${timesDoResultado[num][1]}`
@@ -210,37 +196,86 @@ function App() {
       <p className="subtitle">Quarta-feira - 19h às 21h</p>
 
       <div className="section">
-        <h2>Times {resultadoAtual?.misturado && <span className="badge-misturado">Misturados</span>}</h2>
-        <div className="times-grid">
+        <h2>Times {misturadoExibido && <span className="badge-misturado">Misturados</span>}</h2>
+        <div className={`times-grid ${animando ? 'fade-flash' : ''}`}>
           {[1, 2, 3, 4].map(num => (
             <div
               key={num}
-              className={`time-item ${timesAtivosExibidos.includes(num) ? 'selected' : 'disabled'}`}
-              onClick={() => toggleTime(num)}
+              className={`time-item ${timesSelecionados.includes(num) ? 'selected' : 'disabled'} ${editando === num ? 'editing' : ''}`}
             >
-              <span className={`time-checkbox ${timesAtivosExibidos.includes(num) ? 'checked' : ''}`}>
-                {timesAtivosExibidos.includes(num) ? '✓' : ''}
+              <span
+                className={`time-checkbox ${timesSelecionados.includes(num) ? 'checked' : ''}`}
+                onClick={() => editando !== num && toggleTime(num)}
+              >
+                {timesSelecionados.includes(num) ? '✓' : ''}
               </span>
-              <span className="time-number">{num}</span>
-              <span className="time-players">
-                <strong>{timesDoResultado[num][0]}</strong> <span className="pos">(D)</span> /{' '}
-                <strong>{timesDoResultado[num][1]}</strong> <span className="pos">(E)</span>
-              </span>
+              <span className="time-number" onClick={() => editando !== num && toggleTime(num)}>{num}</span>
+              {editando === num ? (
+                <div className="time-edit-form">
+                  <div className="edit-field">
+                    <input
+                      type="text"
+                      value={editTemp.direito}
+                      onChange={(e) => setEditTemp(prev => ({ ...prev, direito: e.target.value }))}
+                      placeholder="Jogador (D)"
+                    />
+                    <span className="pos">(D)</span>
+                  </div>
+                  <div className="edit-field">
+                    <input
+                      type="text"
+                      value={editTemp.esquerdo}
+                      onChange={(e) => setEditTemp(prev => ({ ...prev, esquerdo: e.target.value }))}
+                      placeholder="Jogador (E)"
+                    />
+                    <span className="pos">(E)</span>
+                  </div>
+                  <div className="edit-actions">
+                    <button className="btn-edit-action btn-save" onClick={salvarEdicao} title="Salvar">
+                      ✓
+                    </button>
+                    <button className="btn-edit-action btn-cancel" onClick={cancelarEdicao} title="Cancelar">
+                      ✕
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <span className="time-players" onClick={() => toggleTime(num)}>
+                    <strong>{timesExibidos[num][0]}</strong> <span className="pos">(D)</span> /{' '}
+                    <strong>{timesExibidos[num][1]}</strong> <span className="pos">(E)</span>
+                  </span>
+                  <button
+                    className="btn-edit"
+                    onClick={(e) => { e.stopPropagation(); iniciarEdicao(num); }}
+                    title="Editar jogadores"
+                  >
+                    🖉
+                  </button>
+                </>
+              )}
             </div>
           ))}
         </div>
         <div className="btn-group">
           <button
-            className={`btn-secondary ${!resultadoAtual?.misturado ? 'btn-active' : 'btn-outline'}`}
+            className={`btn-secondary ${!misturadoExibido ? 'btn-active' : 'btn-outline'}`}
             onClick={handleTimesFixos}
           >
             Times Fixos
           </button>
           <button
-            className={`btn-secondary ${resultadoAtual?.misturado ? 'btn-active' : 'btn-outline'}`}
+            className={`btn-secondary ${misturadoExibido ? 'btn-active' : 'btn-outline'}`}
             onClick={handleMisturar}
           >
             Times Misturados
+          </button>
+          <button
+            className="btn-secondary btn-reset"
+            onClick={handleReset}
+            title="Resetar para times originais"
+          >
+            Reset
           </button>
         </div>
       </div>
@@ -260,7 +295,7 @@ function App() {
             <button
               key={item.numero}
               className={`btn-historico ${indiceAtual === historico.length - 1 - i ? 'active' : ''}`}
-              onClick={() => setIndiceAtual(historico.length - 1 - i)}
+              onClick={() => { setIndiceAtual(historico.length - 1 - i); setPreparandoNovo(false); }}
             >
               {item.numero}
             </button>
@@ -274,12 +309,8 @@ function App() {
             <h2>Cronograma</h2>
             {resultadoAtual.partidas.map((partida, i) => {
               const [t1, t2] = partida
-              const descansando = timesAtivosExibidos.filter(t => !partida.includes(t))
-              const horaInicio = 19
-              const minutoInicio = i * 15
-              const hora = horaInicio + Math.floor(minutoInicio / 60)
-              const minuto = minutoInicio % 60
-              const horario = `${hora}:${minuto.toString().padStart(2, '0')}`
+              const descansando = timesAtivosDoResultado.filter(t => !partida.includes(t))
+              const horario = calcularHorario(i)
               return (
                 <div key={i} className="partida">
                   <span className="partida-numero">{i + 1}</span>
@@ -304,7 +335,7 @@ function App() {
 
             <h3>Jogos por Time</h3>
             <div className="stats-grid">
-              {timesAtivosExibidos.map(t => (
+              {timesAtivosDoResultado.map(t => (
                 <div key={t} className="stat-card">
                   <div className="stat-value">{resultadoAtual.jogosPorTime[t]}</div>
                   <div className="stat-label">{nomeTimeResultado(t)}</div>
@@ -325,11 +356,11 @@ function App() {
               })}
             </div>
 
-            {timesAtivosExibidos.length > 2 && (
+            {timesAtivosDoResultado.length > 2 && (
               <>
                 <h3>Espera Máxima</h3>
                 <div className="confrontos-grid">
-                  {timesAtivosExibidos.map(t => (
+                  {timesAtivosDoResultado.map(t => (
                     <div key={t} className="confronto-item">
                       <span>{nomeTimeResultado(t)}</span>
                       <span className="check-ok">

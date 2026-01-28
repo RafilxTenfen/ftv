@@ -50,6 +50,16 @@ h1 {
 .times-grid {
   display: grid;
   gap: 10px;
+  transition: opacity 0.15s ease-out;
+}
+
+.times-grid.fade-flash {
+  animation: fadeFlash 0.3s ease-out;
+}
+
+@keyframes fadeFlash {
+  0% { opacity: 0.3; }
+  100% { opacity: 1; }
 }
 
 .time-item {
@@ -115,11 +125,97 @@ h1 {
 
 .time-players {
   font-size: 1em;
+  flex: 1;
 }
 
 .pos {
   color: #8892b0;
   font-size: 0.85em;
+}
+
+.time-item.editing {
+  border-color: #64ffda;
+}
+
+.btn-edit {
+  background: transparent;
+  border: none;
+  color: #8892b0;
+  cursor: pointer;
+  font-size: 1.1em;
+  padding: 5px 8px;
+  margin-left: auto;
+  transition: color 0.2s;
+}
+
+.btn-edit:hover {
+  color: #64ffda;
+}
+
+.time-edit-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+}
+
+.edit-field {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.edit-field input {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid #8892b0;
+  border-radius: 5px;
+  padding: 6px 10px;
+  color: #fff;
+  font-size: 0.9em;
+  width: 100px;
+}
+
+.edit-field input:focus {
+  outline: none;
+  border-color: #64ffda;
+}
+
+.edit-actions {
+  display: flex;
+  gap: 5px;
+  margin-left: auto;
+}
+
+.btn-edit-action {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  font-size: 1em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.btn-save {
+  background: #64ffda;
+  color: #1a1a2e;
+}
+
+.btn-save:hover {
+  background: #52e0c4;
+}
+
+.btn-cancel {
+  background: #ff6b6b;
+  color: #fff;
+}
+
+.btn-cancel:hover {
+  background: #e85555;
 }
 
 .btn-gerar {
@@ -298,6 +394,17 @@ h1 {
   background: #52e0c4;
 }
 
+.btn-reset {
+  background: transparent;
+  color: #ff6b6b;
+  border-color: #ff6b6b;
+  flex: 0.5;
+}
+
+.btn-reset:hover {
+  background: rgba(255, 107, 107, 0.2);
+}
+
 .badge-misturado {
   font-size: 0.5em;
   background: #ff6b6b;
@@ -362,5 +469,20 @@ h1 {
 
   .confrontos-grid {
     grid-template-columns: 1fr;
+  }
+
+  .time-edit-form {
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+  }
+
+  .edit-field input {
+    width: 120px;
+  }
+
+  .edit-actions {
+    margin-left: 0;
+    margin-top: 5px;
   }
 }
