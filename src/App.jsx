@@ -62,17 +62,20 @@ function carregarDaURL() {
 
 function App() {
   const dadosURL = carregarDaURL()
-  const jogadoresIniciais = dadosURL?.jogadores || carregarJogadores() || {
+  const jogadoresIniciais = dadosURL?.j || carregarJogadores() || {
     direitos: [...DIREITOS],
     esquerdos: [...ESQUERDOS]
   }
+  const historicoInicial = dadosURL?.h || []
+  const indiceInicial = dadosURL?.i ?? 0
+  const resultadoInicial = historicoInicial[indiceInicial]
   const [jogadores, setJogadores] = useState(jogadoresIniciais)
-  const [times, setTimes] = useState(dadosURL?.times || criarTimesDeJogadores(jogadoresIniciais))
-  const [misturado, setMisturado] = useState(dadosURL?.misturado ?? false)
-  const [historico, setHistorico] = useState(dadosURL?.historico || [])
-  const [indiceAtual, setIndiceAtual] = useState(dadosURL?.indiceAtual ?? 0)
-  const [contador, setContador] = useState(dadosURL?.contador ?? 0)
-  const [timesSelecionados, setTimesSelecionados] = useState(dadosURL?.timesSelecionados || [1, 2, 3, 4])
+  const [times, setTimes] = useState(resultadoInicial?.times || criarTimesDeJogadores(jogadoresIniciais))
+  const [misturado, setMisturado] = useState(resultadoInicial?.misturado ?? false)
+  const [historico, setHistorico] = useState(historicoInicial)
+  const [indiceAtual, setIndiceAtual] = useState(indiceInicial)
+  const [contador, setContador] = useState(dadosURL?.c ?? 0)
+  const [timesSelecionados, setTimesSelecionados] = useState(resultadoInicial?.timesAtivos || [1, 2, 3, 4])
   const [editando, setEditando] = useState(null)
   const [editTemp, setEditTemp] = useState({ direito: '', esquerdo: '' })
   const [preparandoNovo, setPreparandoNovo] = useState(false)
@@ -166,13 +169,10 @@ function App() {
 
   const compartilhar = async () => {
     const dados = {
-      jogadores,
-      times,
-      misturado,
-      historico,
-      indiceAtual,
-      contador,
-      timesSelecionados
+      j: jogadores,
+      h: historico,
+      i: indiceAtual,
+      c: contador
     }
     const codigo = codificarParaURL(dados)
     const url = `${window.location.origin}${window.location.pathname}?d=${codigo}`
