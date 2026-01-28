@@ -37,22 +37,47 @@ function criarTimesDeJogadores(jogadores) {
   }
 }
 
+function codificarParaURL(dados) {
+  const json = JSON.stringify(dados)
+  return btoa(encodeURIComponent(json))
+}
+
+function decodificarDaURL(codigo) {
+  try {
+    const json = decodeURIComponent(atob(codigo))
+    return JSON.parse(json)
+  } catch {
+    return null
+  }
+}
+
+function carregarDaURL() {
+  const params = new URLSearchParams(window.location.search)
+  const dados = params.get('d')
+  if (dados) {
+    return decodificarDaURL(dados)
+  }
+  return null
+}
+
 function App() {
-  const jogadoresIniciais = carregarJogadores() || {
+  const dadosURL = carregarDaURL()
+  const jogadoresIniciais = dadosURL?.jogadores || carregarJogadores() || {
     direitos: [...DIREITOS],
     esquerdos: [...ESQUERDOS]
   }
   const [jogadores, setJogadores] = useState(jogadoresIniciais)
-  const [times, setTimes] = useState(criarTimesDeJogadores(jogadoresIniciais))
-  const [misturado, setMisturado] = useState(false)
-  const [historico, setHistorico] = useState([])
-  const [indiceAtual, setIndiceAtual] = useState(0)
-  const [contador, setContador] = useState(0)
-  const [timesSelecionados, setTimesSelecionados] = useState([1, 2, 3, 4])
+  const [times, setTimes] = useState(dadosURL?.times || criarTimesDeJogadores(jogadoresIniciais))
+  const [misturado, setMisturado] = useState(dadosURL?.misturado ?? false)
+  const [historico, setHistorico] = useState(dadosURL?.historico || [])
+  const [indiceAtual, setIndiceAtual] = useState(dadosURL?.indiceAtual ?? 0)
+  const [contador, setContador] = useState(dadosURL?.contador ?? 0)
+  const [timesSelecionados, setTimesSelecionados] = useState(dadosURL?.timesSelecionados || [1, 2, 3, 4])
   const [editando, setEditando] = useState(null)
   const [editTemp, setEditTemp] = useState({ direito: '', esquerdo: '' })
   const [preparandoNovo, setPreparandoNovo] = useState(false)
   const [animando, setAnimando] = useState(false)
+  const [linkCopiado, setLinkCopiado] = useState(false)
   const inicializado = useRef(false)
 
   const resultadoAtual = historico[indiceAtual] || null
@@ -139,6 +164,28 @@ function App() {
     triggerFade()
   }
 
+  const compartilhar = async () => {
+    const dados = {
+      jogadores,
+      times,
+      misturado,
+      historico,
+      indiceAtual,
+      contador,
+      timesSelecionados
+    }
+    const codigo = codificarParaURL(dados)
+    const url = `${window.location.origin}${window.location.pathname}?d=${codigo}`
+
+    try {
+      await navigator.clipboard.writeText(url)
+      setLinkCopiado(true)
+      setTimeout(() => setLinkCopiado(false), 2000)
+    } catch {
+      prompt('Copie o link:', url)
+    }
+  }
+
   const iniciarEdicao = (num) => {
     setEditando(num)
     setEditTemp({
@@ -176,7 +223,9 @@ function App() {
   useEffect(() => {
     if (!inicializado.current) {
       inicializado.current = true
-      handleGerar()
+      if (historico.length === 0) {
+        handleGerar()
+      }
     }
   }, [])
 
@@ -196,7 +245,12 @@ function App() {
       <p className="subtitle">Quarta-feira - 19h às 21h</p>
 
       <div className="section">
-        <h2>Times {misturadoExibido && <span className="badge-misturado">Misturados</span>}</h2>
+        <div className="section-header">
+          <h2>Times {misturadoExibido && <span className="badge-misturado">Misturados</span>}</h2>
+          <button className="btn-compartilhar" onClick={compartilhar}>
+            {linkCopiado ? '✓ Copiado!' : 'Compartilhar'}
+          </button>
+        </div>
         <div className={`times-grid ${animando ? 'fade-flash' : ''}`}>
           {[1, 2, 3, 4].map(num => (
             <div
