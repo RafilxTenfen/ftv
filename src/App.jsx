@@ -8,25 +8,10 @@ import {
   gerarPartidas,
   calcularHorario
 } from './utils'
+import { useAuth } from './useAuth'
+import { useJogadores } from './useJogadores'
 
 const MAX_HISTORICO = 5
-const STORAGE_KEY = 'ftv-jogadores'
-
-function carregarJogadores() {
-  const salvo = localStorage.getItem(STORAGE_KEY)
-  if (salvo) {
-    try {
-      return JSON.parse(salvo)
-    } catch {
-      return null
-    }
-  }
-  return null
-}
-
-function salvarJogadores(jogadores) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(jogadores))
-}
 
 function criarTimesDeJogadores(jogadores) {
   return {
@@ -37,12 +22,12 @@ function criarTimesDeJogadores(jogadores) {
   }
 }
 
-function codificarParaURL(dados) {
+export function codificarParaURL(dados) {
   const json = JSON.stringify(dados)
   return btoa(encodeURIComponent(json))
 }
 
-function decodificarDaURL(codigo) {
+export function decodificarDaURL(codigo) {
   try {
     const json = decodeURIComponent(atob(codigo))
     return JSON.parse(json)
@@ -61,15 +46,13 @@ function carregarDaURL() {
 }
 
 function App() {
+  const { user, loading: authLoading, login, logout } = useAuth()
   const dadosURL = carregarDaURL()
-  const jogadoresIniciais = dadosURL?.j || carregarJogadores() || {
-    direitos: [...DIREITOS],
-    esquerdos: [...ESQUERDOS]
-  }
+  const { jogadores, salvarJogadores } = useJogadores(user, authLoading, dadosURL)
+  const jogadoresIniciais = dadosURL?.j || jogadores
   const historicoInicial = dadosURL?.h || []
   const indiceInicial = dadosURL?.i ?? 0
   const resultadoInicial = historicoInicial[indiceInicial]
-  const [jogadores, setJogadores] = useState(jogadoresIniciais)
   const [times, setTimes] = useState(resultadoInicial?.times || criarTimesDeJogadores(jogadoresIniciais))
   const [misturado, setMisturado] = useState(resultadoInicial?.misturado ?? false)
   const [historico, setHistorico] = useState(historicoInicial)
@@ -157,7 +140,6 @@ function App() {
       direitos: [...DIREITOS],
       esquerdos: [...ESQUERDOS]
     }
-    setJogadores(jogadoresOriginais)
     salvarJogadores(jogadoresOriginais)
     setTimes(TIMES_FIXOS)
     setMisturado(false)
@@ -209,7 +191,6 @@ function App() {
     novosJogadores.direitos[indice] = editTemp.direito.trim() || jogadores.direitos[indice]
     novosJogadores.esquerdos[indice] = editTemp.esquerdo.trim() || jogadores.esquerdos[indice]
 
-    setJogadores(novosJogadores)
     salvarJogadores(novosJogadores)
 
     const novosTimes = { ...times }
@@ -243,6 +224,18 @@ function App() {
     <div className="container">
       <h1>Futevôlei Cidade Alta</h1>
       <p className="subtitle">Quarta-feira - 19h às 21h</p>
+
+      <div className="auth-bar">
+        {user ? (
+          <>
+            {user.photoURL && <img className="auth-avatar" src={user.photoURL} alt="" referrerPolicy="no-referrer" />}
+            <span className="auth-name">{user.displayName}</span>
+            <button className="btn-auth" onClick={logout}>Sair</button>
+          </>
+        ) : (
+          !authLoading && <button className="btn-auth btn-login" onClick={login}>Entrar com Google</button>
+        )}
+      </div>
 
       <div className="section">
         <div className="section-header">
