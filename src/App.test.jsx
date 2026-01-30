@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { MemoryRouter } from 'react-router-dom'
 import App, { codificarParaURL, decodificarDaURL } from './App'
 
 describe('codificarParaURL / decodificarDaURL', () => {
@@ -60,7 +61,11 @@ describe('codificarParaURL / decodificarDaURL', () => {
 
 describe('App', () => {
   beforeEach(() => {
-    render(<App />)
+    render(
+      <MemoryRouter>
+        <App />
+      </MemoryRouter>
+    )
   })
 
   describe('Renderizacao inicial', () => {

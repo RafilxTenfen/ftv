@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { useNavigate, Link } from 'react-router-dom'
 import './App.css'
 import {
   TIMES_FIXOS,
@@ -10,6 +11,7 @@ import {
 } from './utils'
 import { useAuth } from './useAuth'
 import { useJogadores } from './useJogadores'
+import { useAdmin } from './useAdmin'
 
 const MAX_HISTORICO = 5
 
@@ -46,7 +48,9 @@ function carregarDaURL() {
 }
 
 function App() {
+  const navigate = useNavigate()
   const { user, loading: authLoading, login, logout } = useAuth()
+  const { isAdmin } = useAdmin(user)
   const dadosURL = carregarDaURL()
   const { jogadores, salvarJogadores } = useJogadores(user, authLoading, dadosURL)
   const jogadoresIniciais = dadosURL?.j || jogadores
@@ -234,6 +238,21 @@ function App() {
           </>
         ) : (
           !authLoading && <button className="btn-auth btn-login" onClick={login}>Entrar com Google</button>
+        )}
+      </div>
+
+      <div className="nav-bar">
+        <Link to="/saved" className="nav-link">Jogos Salvos</Link>
+        {isAdmin && resultadoAtual && (
+          <button
+            className="btn-salvar-data"
+            onClick={() => {
+              const encoded = codificarParaURL({ j: jogadores, r: resultadoAtual })
+              navigate(`/saved?d=${encoded}`)
+            }}
+          >
+            Salvar para data
+          </button>
         )}
       </div>
 
