@@ -100,7 +100,7 @@ function App() {
     if (timesSelecionados.length < 2) return
 
     const novoNumero = contador + 1
-    const resultado = gerarPartidas(timesSelecionados, 10)
+    const resultado = gerarPartidas(timesSelecionados, 16)
     if (!resultado) return
 
     const novoResultado = {
