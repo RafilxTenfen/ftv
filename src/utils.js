@@ -41,17 +41,23 @@ export function gerarPartidas(timesAtivos, numPartidas = 10) {
   const partidas = []
   const jogosPorTime = {}
   const ultimaPartida = {}
+  const jogosSeguidos = {}
   timesAtivos.forEach(t => {
     jogosPorTime[t] = 0
     ultimaPartida[t] = -3
+    jogosSeguidos[t] = 0
   })
   const confrontosRealizados = {}
   todosConfrontos.forEach(c => confrontosRealizados[c.join(',')] = 0)
 
   for (let i = 0; i < numPartidas; i++) {
-    let confrontosValidos = []
+    // Times que ja jogaram as 2 ultimas partidas nao podem jogar de novo (evita 3 seguidas)
+    const semTresSeguidas = todosConfrontos.filter(c =>
+      c.every(t => jogosSeguidos[t] < 2)
+    )
 
-    for (const confronto of todosConfrontos) {
+    let confrontosValidos = []
+    for (const confronto of semTresSeguidas) {
       const outros = timesAtivos.filter(t => !confronto.includes(t))
       const esperaOutros = outros.map(t => i - ultimaPartida[t])
       if (esperaOutros.some(e => e >= 3)) continue
@@ -59,14 +65,11 @@ export function gerarPartidas(timesAtivos, numPartidas = 10) {
     }
 
     if (confrontosValidos.length === 0) {
+      // Mantem a regra de evitar 3 seguidas quando possivel; so relaxa se nao houver alternativa
+      const base = semTresSeguidas.length > 0 ? semTresSeguidas : todosConfrontos
       const timesEsperando = timesAtivos.filter(t => i - ultimaPartida[t] >= 3)
-      if (timesEsperando.length > 0) {
-        confrontosValidos = todosConfrontos.filter(c =>
-          timesEsperando.some(t => c.includes(t))
-        )
-      } else {
-        confrontosValidos = [...todosConfrontos]
-      }
+      const comEsperando = base.filter(c => timesEsperando.some(t => c.includes(t)))
+      confrontosValidos = comEsperando.length > 0 ? comEsperando : base
     }
 
     confrontosValidos.sort((a, b) => {
@@ -88,6 +91,11 @@ export function gerarPartidas(timesAtivos, numPartidas = 10) {
     ultimaPartida[t1] = i
     ultimaPartida[t2] = i
     confrontosRealizados[confrontoEscolhido.join(',')]++
+
+    timesAtivos.forEach(t => {
+      if (t === t1 || t === t2) jogosSeguidos[t]++
+      else jogosSeguidos[t] = 0
+    })
   }
 
   const maxEspera = {}

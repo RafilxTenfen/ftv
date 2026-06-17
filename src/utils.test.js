@@ -9,6 +9,18 @@ import {
   calcularHorario
 } from './utils'
 
+function maxJogosSeguidos(partidas, timesAtivos) {
+  let max = 0
+  timesAtivos.forEach(t => {
+    let atual = 0
+    partidas.forEach(p => {
+      atual = p.includes(t) ? atual + 1 : 0
+      max = Math.max(max, atual)
+    })
+  })
+  return max
+}
+
 describe('TIMES_FIXOS', () => {
   it('deve ter 4 times', () => {
     expect(Object.keys(TIMES_FIXOS)).toHaveLength(4)
@@ -164,6 +176,20 @@ describe('gerarPartidas', () => {
       Object.values(result.maxEspera).forEach(espera => {
         expect(espera).toBeLessThanOrEqual(2)
       })
+    }
+  })
+
+  it('nenhum time deve jogar 3 partidas seguidas (4 times)', () => {
+    for (let i = 0; i < 200; i++) {
+      const result = gerarPartidas([1, 2, 3, 4], 16)
+      expect(maxJogosSeguidos(result.partidas, [1, 2, 3, 4])).toBeLessThanOrEqual(2)
+    }
+  })
+
+  it('nenhum time deve jogar 3 partidas seguidas (3 times)', () => {
+    for (let i = 0; i < 200; i++) {
+      const result = gerarPartidas([1, 2, 3], 16)
+      expect(maxJogosSeguidos(result.partidas, [1, 2, 3])).toBeLessThanOrEqual(2)
     }
   })
 
