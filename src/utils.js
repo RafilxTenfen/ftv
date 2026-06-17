@@ -115,7 +115,7 @@ export function gerarPartidas(timesAtivos, numPartidas = 10) {
 
 export function calcularHorario(indicePartida) {
   const horaInicio = 19
-  const minutoInicio = indicePartida * 15
+  const minutoInicio = 30 + indicePartida * 15
   const hora = horaInicio + Math.floor(minutoInicio / 60)
   const minuto = minutoInicio % 60
   return `${hora}:${minuto.toString().padStart(2, '0')}`

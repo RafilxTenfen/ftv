@@ -195,24 +195,24 @@ describe('gerarPartidas', () => {
 })
 
 describe('calcularHorario', () => {
-  it('primeira partida deve comecar as 19:00', () => {
-    expect(calcularHorario(0)).toBe('19:00')
+  it('primeira partida deve comecar as 19:30', () => {
+    expect(calcularHorario(0)).toBe('19:30')
   })
 
-  it('segunda partida deve comecar as 19:15', () => {
-    expect(calcularHorario(1)).toBe('19:15')
+  it('segunda partida deve comecar as 19:45', () => {
+    expect(calcularHorario(1)).toBe('19:45')
   })
 
-  it('quinta partida deve comecar as 20:00', () => {
-    expect(calcularHorario(4)).toBe('20:00')
+  it('quinta partida deve comecar as 20:30', () => {
+    expect(calcularHorario(4)).toBe('20:30')
   })
 
-  it('decima partida deve comecar as 21:15', () => {
-    expect(calcularHorario(9)).toBe('21:15')
+  it('decima partida deve comecar as 21:45', () => {
+    expect(calcularHorario(9)).toBe('21:45')
   })
 
   it('minutos devem ter zero a esquerda quando necessario', () => {
-    expect(calcularHorario(0)).toBe('19:00')
-    expect(calcularHorario(4)).toBe('20:00')
+    expect(calcularHorario(2)).toBe('20:00')
+    expect(calcularHorario(6)).toBe('21:00')
   })
 })
