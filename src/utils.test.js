@@ -21,6 +21,39 @@ function maxJogosSeguidos(partidas, timesAtivos) {
   return max
 }
 
+// PRNG deterministico (mulberry32) para tornar os testes reproduziveis em vez de
+// depender da sorte do Math.random. Seeds 0..199 cobrem amplamente o espaco de geracao.
+function mulberry32(seed) {
+  return function () {
+    seed |= 0
+    seed = (seed + 0x6D2B79F5) | 0
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed)
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+  }
+}
+
+function comSeed(seed, fn) {
+  const original = Math.random
+  Math.random = mulberry32(seed)
+  try {
+    return fn()
+  } finally {
+    Math.random = original
+  }
+}
+
+// Retorna a lista de confrontos que se repetem em partidas seguidas (vazia = ok)
+function confrontosSeguidosRepetidos(partidas) {
+  const repetidos = []
+  for (let j = 1; j < partidas.length; j++) {
+    const anterior = [...partidas[j - 1]].sort().join(',')
+    const atual = [...partidas[j]].sort().join(',')
+    if (anterior === atual) repetidos.push({ jogo: j + 1, confronto: atual })
+  }
+  return repetidos
+}
+
 describe('TIMES_FIXOS', () => {
   it('deve ter 4 times', () => {
     expect(Object.keys(TIMES_FIXOS)).toHaveLength(4)
@@ -191,6 +224,33 @@ describe('gerarPartidas', () => {
       const result = gerarPartidas([1, 2, 3], 16)
       expect(maxJogosSeguidos(result.partidas, [1, 2, 3])).toBeLessThanOrEqual(2)
     }
+  })
+
+  // Regressao do bug: jogos 6 e 7 do cronograma eram o mesmo confronto seguido
+  // (2 equipes jogando 2 jogos seguidas). Deterministico via seeds: ~31% dos seeds
+  // disparavam o bug no codigo antigo, entao a falha e garantida em caso de regressao.
+  it('mesmo confronto nao deve se repetir em partidas seguidas (4 times, deterministico)', () => {
+    for (let seed = 0; seed < 200; seed++) {
+      const result = comSeed(seed, () => gerarPartidas([1, 2, 3, 4], 16))
+      const repetidos = confrontosSeguidosRepetidos(result.partidas)
+      expect(repetidos, `seed ${seed}: confrontos repetidos seguidos ${JSON.stringify(repetidos)}`).toEqual([])
+    }
+  })
+
+  it('mesmo confronto nao deve se repetir em partidas seguidas (3 times, deterministico)', () => {
+    for (let seed = 0; seed < 200; seed++) {
+      const result = comSeed(seed, () => gerarPartidas([1, 2, 3], 16))
+      const repetidos = confrontosSeguidosRepetidos(result.partidas)
+      expect(repetidos, `seed ${seed}: confrontos repetidos seguidos ${JSON.stringify(repetidos)}`).toEqual([])
+    }
+  })
+
+  // Com 2 times so existe 1 confronto possivel, entao a repeticao e inevitavel e esperada:
+  // a regra de "nao repetir" nao deve travar a geracao nesse caso.
+  it('com 2 times o unico confronto se repete em todas as partidas', () => {
+    const result = comSeed(0, () => gerarPartidas([1, 2], 16))
+    expect(result.partidas).toHaveLength(16)
+    expect(confrontosSeguidosRepetidos(result.partidas)).toHaveLength(15)
   })
 
   it('deve funcionar com 3 times', () => {

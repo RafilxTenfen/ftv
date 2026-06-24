@@ -50,14 +50,19 @@ export function gerarPartidas(timesAtivos, numPartidas = 10) {
   const confrontosRealizados = {}
   todosConfrontos.forEach(c => confrontosRealizados[c.join(',')] = 0)
 
+  let ultimoConfronto = null
+
   for (let i = 0; i < numPartidas; i++) {
     // Times que ja jogaram as 2 ultimas partidas nao podem jogar de novo (evita 3 seguidas)
     const semTresSeguidas = todosConfrontos.filter(c =>
       c.every(t => jogosSeguidos[t] < 2)
     )
 
+    // Evita repetir o mesmo confronto na partida seguinte (2 times jogando 2 vezes seguidas)
+    const semRepetir = semTresSeguidas.filter(c => c.join(',') !== ultimoConfronto)
+
     let confrontosValidos = []
-    for (const confronto of semTresSeguidas) {
+    for (const confronto of semRepetir) {
       const outros = timesAtivos.filter(t => !confronto.includes(t))
       const esperaOutros = outros.map(t => i - ultimaPartida[t])
       if (esperaOutros.some(e => e >= 3)) continue
@@ -65,8 +70,10 @@ export function gerarPartidas(timesAtivos, numPartidas = 10) {
     }
 
     if (confrontosValidos.length === 0) {
-      // Mantem a regra de evitar 3 seguidas quando possivel; so relaxa se nao houver alternativa
-      const base = semTresSeguidas.length > 0 ? semTresSeguidas : todosConfrontos
+      // Relaxa as restricoes na ordem: sem-repetir, sem-3-seguidas, e por fim qualquer confronto
+      const base = semRepetir.length > 0 ? semRepetir
+        : semTresSeguidas.length > 0 ? semTresSeguidas
+        : todosConfrontos
       const timesEsperando = timesAtivos.filter(t => i - ultimaPartida[t] >= 3)
       const comEsperando = base.filter(c => timesEsperando.some(t => c.includes(t)))
       confrontosValidos = comEsperando.length > 0 ? comEsperando : base
@@ -84,6 +91,7 @@ export function gerarPartidas(timesAtivos, numPartidas = 10) {
 
     const confrontoEscolhido = confrontosValidos[0]
     partidas.push(confrontoEscolhido)
+    ultimoConfronto = confrontoEscolhido.join(',')
 
     const [t1, t2] = confrontoEscolhido
     jogosPorTime[t1]++
