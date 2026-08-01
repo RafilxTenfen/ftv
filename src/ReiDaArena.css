@@ -1,0 +1,627 @@
+.arena-page {
+  --ouro: #ffd166;
+  --direito: #64ffda;
+  --esquerdo: #ff9f6b;
+  --apagado: #8892b0;
+  --fundo-item: rgba(255, 255, 255, 0.05);
+
+  min-height: 100vh;
+  background: radial-gradient(1200px 600px at 50% -10%, #2b2350 0%, transparent 60%),
+    linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  color: #fff;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.arena-page * {
+  box-sizing: border-box;
+}
+
+/* Bordas laterais como as da home, porem bem menores: a home trava em
+   800px (313px de margem a 1440), aqui a margem acompanha a tela */
+.arena-container {
+  width: 88%;
+  margin: 0 auto;
+  padding: 20px 0 60px;
+}
+
+.arena-voltar {
+  display: inline-block;
+  color: var(--apagado);
+  text-decoration: none;
+  font-size: 0.9em;
+  padding: 6px 0;
+  transition: color 0.2s;
+}
+
+.arena-voltar:hover {
+  color: var(--ouro);
+}
+
+.arena-header {
+  text-align: center;
+  margin: 10px 0 25px;
+}
+
+.arena-header h1 {
+  font-size: 2.4em;
+  margin: 0 0 8px;
+  background: linear-gradient(135deg, #ffe9a8 0%, var(--ouro) 60%, #e6a52c 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.arena-header p {
+  color: var(--apagado);
+  margin: 0 auto;
+  max-width: 520px;
+  font-size: 0.95em;
+}
+
+.arena-resumo {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.arena-resumo div {
+  background: rgba(255, 209, 102, 0.08);
+  border: 1px solid rgba(255, 209, 102, 0.25);
+  border-radius: 12px;
+  padding: 12px 10px;
+  text-align: center;
+}
+
+.arena-resumo b {
+  display: block;
+  font-size: 1.35em;
+  color: var(--ouro);
+  white-space: nowrap;
+}
+
+.arena-resumo span {
+  display: block;
+  font-size: 0.75em;
+  color: var(--apagado);
+  margin-top: 3px;
+}
+
+.arena-secao {
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 18px;
+}
+
+.arena-secao h2 {
+  color: var(--ouro);
+  margin: 0 0 12px;
+  font-size: 1.25em;
+}
+
+.arena-secao h3 {
+  color: #ccd6f6;
+  font-size: 0.95em;
+  margin: 22px 0 12px;
+}
+
+.arena-secao-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.arena-secao-topo h2 {
+  margin: 0;
+}
+
+.arena-secao-acoes {
+  display: flex;
+  gap: 8px;
+}
+
+.arena-btn-sutil {
+  background: transparent;
+  color: var(--apagado);
+  border: 1px solid var(--apagado);
+  border-radius: 8px;
+  padding: 8px 14px;
+  cursor: pointer;
+  font-size: 0.85em;
+  transition: all 0.2s;
+}
+
+.arena-btn-sutil:hover {
+  color: var(--ouro);
+  border-color: var(--ouro);
+  background: rgba(255, 209, 102, 0.12);
+}
+
+.arena-btn-reset:hover {
+  color: #ff6b6b;
+  border-color: #ff6b6b;
+  background: rgba(255, 107, 107, 0.12);
+}
+
+.arena-dica {
+  color: var(--apagado);
+  font-size: 0.85em;
+  margin: 10px 0 16px;
+}
+
+.arena-listas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.arena-lista {
+  background: var(--fundo-item);
+  border-radius: 12px;
+  padding: 14px;
+  border-top: 3px solid var(--direito);
+}
+
+.arena-lado-esquerdo {
+  border-top-color: var(--esquerdo);
+}
+
+.arena-lista-titulo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.arena-sigla {
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+  display: grid;
+  place-items: center;
+  font-size: 0.8em;
+  font-weight: bold;
+  color: #10182b;
+  background: var(--direito);
+}
+
+.arena-sigla-esquerdo {
+  background: var(--esquerdo);
+}
+
+.arena-contagem {
+  margin-left: auto;
+  color: var(--apagado);
+  font-size: 0.85em;
+  font-weight: normal;
+}
+
+/* Em telas largas os jogadores quebram em colunas em vez de virar
+   linhas esticadas com os botoes longe do nome */
+.arena-jogadores {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(240px, 100%), 1fr));
+  gap: 6px;
+}
+
+.arena-jogador {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 8px;
+  padding: 6px 8px;
+}
+
+.arena-nivel {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 0.8em;
+  font-weight: bold;
+  flex-shrink: 0;
+  color: var(--direito);
+  border: 1px solid rgba(100, 255, 218, 0.4);
+  background: rgba(100, 255, 218, 0.1);
+}
+
+.arena-nivel-esquerdo {
+  color: var(--esquerdo);
+  border-color: rgba(255, 159, 107, 0.4);
+  background: rgba(255, 159, 107, 0.1);
+}
+
+.arena-nome {
+  flex: 1;
+  text-align: left;
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 0.95em;
+  font-family: inherit;
+  cursor: text;
+  padding: 4px 2px;
+  border-radius: 5px;
+}
+
+.arena-nome:hover {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.arena-input-nome {
+  flex: 1;
+  min-width: 0;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--ouro);
+  border-radius: 5px;
+  color: #fff;
+  padding: 4px 6px;
+  font-size: 0.95em;
+  font-family: inherit;
+}
+
+.arena-acoes {
+  display: flex;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.arena-mini {
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--apagado);
+  cursor: pointer;
+  font-size: 0.7em;
+  transition: all 0.15s;
+}
+
+.arena-mini:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+
+.arena-mini:disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+}
+
+.arena-mini-remover:hover:not(:disabled) {
+  background: rgba(255, 107, 107, 0.2);
+  color: #ff6b6b;
+}
+
+.arena-adicionar {
+  display: flex;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.arena-adicionar input {
+  flex: 1;
+  min-width: 0;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  padding: 8px 10px;
+  color: #fff;
+  font-size: 0.9em;
+  font-family: inherit;
+}
+
+.arena-adicionar input:focus {
+  outline: none;
+  border-color: var(--ouro);
+}
+
+.arena-adicionar button {
+  width: 38px;
+  border: none;
+  border-radius: 8px;
+  background: rgba(255, 209, 102, 0.2);
+  color: var(--ouro);
+  font-size: 1.2em;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.arena-adicionar button:hover:not(:disabled) {
+  background: var(--ouro);
+  color: #10182b;
+}
+
+.arena-adicionar button:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.arena-config {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 14px;
+}
+
+.arena-config label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.85em;
+  color: var(--apagado);
+}
+
+.arena-config input {
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  padding: 9px 10px;
+  color: #fff;
+  font-size: 1em;
+  font-family: inherit;
+  width: 100%;
+  max-width: 190px;
+}
+
+.arena-config input:focus {
+  outline: none;
+  border-color: var(--ouro);
+}
+
+.arena-campo-sufixo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.arena-aviso {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: rgba(255, 107, 107, 0.12);
+  border: 1px solid rgba(255, 107, 107, 0.35);
+  color: #ffb3b3;
+  font-size: 0.85em;
+}
+
+.arena-btn-gerar {
+  display: block;
+  width: 100%;
+  padding: 15px;
+  font-size: 1.1em;
+  font-weight: bold;
+  font-family: inherit;
+  background: linear-gradient(135deg, #ffe9a8 0%, var(--ouro) 55%, #e6a52c 100%);
+  color: #2b2000;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  margin-bottom: 18px;
+}
+
+.arena-btn-gerar:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 22px rgba(255, 209, 102, 0.35);
+}
+
+.arena-btn-gerar:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.arena-rodadas {
+  display: grid;
+  /* o min() evita que a coluna fique mais larga que a tela no celular */
+  grid-template-columns: repeat(auto-fit, minmax(min(380px, 100%), 1fr));
+  gap: 12px;
+  align-items: start;
+}
+
+.arena-rodada {
+  background: var(--fundo-item);
+  border-radius: 12px;
+  padding: 12px 14px;
+  border-left: 3px solid var(--ouro);
+}
+
+.arena-rodada-topo {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.arena-rodada-hora {
+  font-size: 1.1em;
+  font-weight: bold;
+  color: var(--ouro);
+}
+
+.arena-rodada-num {
+  font-size: 0.8em;
+  color: var(--apagado);
+}
+
+.arena-jogo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.arena-quadra {
+  font-size: 0.7em;
+  font-weight: bold;
+  color: var(--apagado);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 5px;
+  padding: 3px 6px;
+  flex-shrink: 0;
+}
+
+.arena-confronto {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  flex: 1;
+}
+
+.arena-dupla {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.arena-atleta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.arena-tag {
+  font-size: 0.65em;
+  font-weight: bold;
+  border-radius: 4px;
+  padding: 1px 4px;
+  color: #10182b;
+  background: var(--direito);
+}
+
+.arena-tag-esquerdo {
+  background: var(--esquerdo);
+}
+
+.arena-mais {
+  color: var(--apagado);
+  font-size: 0.85em;
+}
+
+.arena-forca {
+  font-size: 0.7em;
+  font-weight: bold;
+  color: var(--ouro);
+  background: rgba(255, 209, 102, 0.15);
+  border-radius: 20px;
+  padding: 2px 7px;
+  margin-left: 2px;
+}
+
+.arena-vs {
+  color: #ff6b6b;
+  font-weight: bold;
+  font-size: 0.85em;
+}
+
+.arena-descansam {
+  color: var(--apagado);
+  font-size: 0.8em;
+  padding-top: 9px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.arena-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+.arena-card {
+  background: var(--fundo-item);
+  border-radius: 10px;
+  padding: 14px;
+  text-align: center;
+}
+
+.arena-card b {
+  display: block;
+  font-size: 1.8em;
+  color: var(--ouro);
+}
+
+.arena-card small {
+  font-size: 0.5em;
+  color: var(--apagado);
+}
+
+.arena-card span {
+  display: block;
+  font-size: 0.75em;
+  color: var(--apagado);
+  margin-top: 4px;
+}
+
+.arena-tabela {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 8px;
+}
+
+.arena-linha {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  background: var(--fundo-item);
+  border-radius: 8px;
+  padding: 9px 12px;
+  font-size: 0.9em;
+}
+
+.arena-linha-valor {
+  color: var(--ouro);
+  font-weight: 600;
+  white-space: nowrap;
+  font-size: 0.9em;
+}
+
+.arena-linha-valor small {
+  color: var(--apagado);
+  font-weight: normal;
+}
+
+@media (max-width: 600px) {
+  .arena-container {
+    width: 94%;
+    padding: 14px 0 50px;
+  }
+
+  .arena-header h1 {
+    font-size: 1.8em;
+  }
+
+  .arena-resumo {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .arena-confronto {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+  }
+
+  .arena-dupla {
+    width: 100%;
+  }
+
+  .arena-forca {
+    margin-left: auto;
+  }
+
+  .arena-tabela {
+    grid-template-columns: 1fr;
+  }
+}
