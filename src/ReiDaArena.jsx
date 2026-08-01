@@ -282,6 +282,47 @@ export default function ReiDaArena() {
           <div><b>{esquerdos.length} / {direitos.length}</b><span>jogos por D / E</span></div>
         </div>
 
+        <section className="arena-secao arena-secao-compacta">
+          <div className="arena-config">
+            <h2>Configuração</h2>
+            <label>
+              Início
+              <input
+                type="time"
+                value={config.horaInicio}
+                onChange={(e) => atualizarConfig('horaInicio', e.target.value)}
+              />
+            </label>
+            <label>
+              Duração
+              <input
+                type="number"
+                min="5"
+                max="60"
+                value={config.duracao}
+                onChange={(e) => atualizarConfig('duracao', Number(e.target.value) || 1)}
+              />
+              <span className="arena-sufixo">min</span>
+            </label>
+            <label>
+              Quadras
+              <input
+                type="number"
+                min="1"
+                max="4"
+                value={config.quadras}
+                onChange={(e) => atualizarConfig('quadras', Number(e.target.value) || 1)}
+              />
+            </label>
+          </div>
+          {config.quadras > maxJogosSimultaneos(direitos.length, esquerdos.length, config.quadras) && (
+            <p className="arena-aviso">
+              Só dá para usar {maxJogosSimultaneos(direitos.length, esquerdos.length, config.quadras)} quadra(s):
+              cada jogo precisa de 2 direitos e 2 esquerdos livres.
+            </p>
+          )}
+        </section>
+
         <section className="arena-secao">
           <div className="arena-secao-topo">
             <h2>Jogadores</h2>
@@ -314,49 +355,6 @@ export default function ReiDaArena() {
               onChange={(lista) => atualizarLado('esquerdos', lista)}
             />
           </div>
-        </section>
-
-        <section className="arena-secao">
-          <h2>Configuração</h2>
-          <div className="arena-config">
-            <label>
-              Início
-              <input
-                type="time"
-                value={config.horaInicio}
-                onChange={(e) => atualizarConfig('horaInicio', e.target.value)}
-              />
-            </label>
-            <label>
-              Duração do jogo
-              <div className="arena-campo-sufixo">
-                <input
-                  type="number"
-                  min="5"
-                  max="60"
-                  value={config.duracao}
-                  onChange={(e) => atualizarConfig('duracao', Number(e.target.value) || 1)}
-                />
-                <span>min</span>
-              </div>
-            </label>
-            <label>
-              Quadras
-              <input
-                type="number"
-                min="1"
-                max="4"
-                value={config.quadras}
-                onChange={(e) => atualizarConfig('quadras', Number(e.target.value) || 1)}
-              />
-            </label>
-          </div>
-          {config.quadras > maxJogosSimultaneos(direitos.length, esquerdos.length, config.quadras) && (
-            <p className="arena-aviso">
-              Só dá para usar {maxJogosSimultaneos(direitos.length, esquerdos.length, config.quadras)} quadra(s):
-              cada jogo precisa de 2 direitos e 2 esquerdos livres.
-            </p>
-          )}
         </section>
 
         <button className="arena-btn-gerar" onClick={() => regerar()} disabled={!podeGerar}>

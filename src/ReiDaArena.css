@@ -200,14 +200,14 @@
   font-weight: normal;
 }
 
-/* Em telas largas os jogadores quebram em colunas em vez de virar
-   linhas esticadas com os botoes longe do nome */
+/* Um jogador por linha em qualquer tela: a lista e um ranking e precisa
+   ser lida de cima para baixo */
 .arena-jogadores {
   list-style: none;
   margin: 0;
   padding: 0;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(240px, 100%), 1fr));
+  display: flex;
+  flex-direction: column;
   gap: 6px;
 }
 
@@ -346,16 +346,27 @@
   cursor: not-allowed;
 }
 
+/* Barra unica e enxuta: titulo e campos na mesma linha */
+.arena-secao-compacta {
+  padding: 12px 18px;
+}
+
 .arena-config {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 26px;
+}
+
+.arena-config h2 {
+  margin: 0;
+  font-size: 1.05em;
 }
 
 .arena-config label {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
+  align-items: center;
+  gap: 8px;
   font-size: 0.85em;
   color: var(--apagado);
 }
@@ -364,12 +375,15 @@
   background: rgba(0, 0, 0, 0.25);
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 8px;
-  padding: 9px 10px;
+  padding: 6px 9px;
   color: #fff;
-  font-size: 1em;
+  font-size: 0.95em;
   font-family: inherit;
-  width: 100%;
-  max-width: 190px;
+  width: 72px;
+}
+
+.arena-config input[type="time"] {
+  width: 120px;
 }
 
 .arena-config input:focus {
@@ -377,10 +391,8 @@
   border-color: var(--ouro);
 }
 
-.arena-campo-sufixo {
-  display: flex;
-  align-items: center;
-  gap: 6px;
+.arena-sufixo {
+  margin-left: -3px;
 }
 
 .arena-aviso {
@@ -421,8 +433,10 @@
 
 .arena-rodadas {
   display: grid;
-  /* o min() evita que a coluna fique mais larga que a tela no celular */
-  grid-template-columns: repeat(auto-fit, minmax(min(380px, 100%), 1fr));
+  /* 580px e o que o confronto mais largo precisa para caber numa linha so
+     (medido: 501px + chip da quadra + padding). O min() evita que a coluna
+     fique mais larga que a tela no celular */
+  grid-template-columns: repeat(auto-fit, minmax(min(580px, 100%), 1fr));
   gap: 12px;
   align-items: start;
 }
