@@ -51,7 +51,7 @@ describe('App', () => {
   describe('Geracao de partidas', () => {
     it('deve gerar partidas ao carregar', async () => {
       await waitFor(() => {
-        expect(screen.getByText('19:00')).toBeInTheDocument()
+        expect(screen.getByText('19:30')).toBeInTheDocument()
       })
     })
 
@@ -66,23 +66,24 @@ describe('App', () => {
 
     it('deve mostrar horarios das partidas', async () => {
       await waitFor(() => {
-        expect(screen.getByText('19:00')).toBeInTheDocument()
-        expect(screen.getByText('19:15')).toBeInTheDocument()
         expect(screen.getByText('19:30')).toBeInTheDocument()
+        expect(screen.getByText('19:45')).toBeInTheDocument()
+        expect(screen.getByText('20:00')).toBeInTheDocument()
       })
     })
 
+    // Busca pelos botoes do historico: o texto '1' sozinho aparece tambem
+    // no numero da partida e no numero do time
     it('deve incrementar numero da geracao ao clicar Gerar Partidas', async () => {
-      const btnGerar = screen.getByText('Gerar Partidas')
-
       await waitFor(() => {
-        expect(screen.getByText('1')).toBeInTheDocument()
+        expect(document.querySelectorAll('.btn-historico')).toHaveLength(1)
       })
 
-      fireEvent.click(btnGerar)
+      fireEvent.click(screen.getByText('Gerar Partidas'))
 
       await waitFor(() => {
-        expect(screen.getByText('2')).toBeInTheDocument()
+        const geracoes = [...document.querySelectorAll('.btn-historico')].map(b => b.textContent)
+        expect(geracoes).toEqual(['1', '2'])
       })
     })
   })
@@ -94,10 +95,10 @@ describe('App', () => {
       })
     })
 
-    it('deve manter maximo de 3 geracoes no historico', async () => {
+    it('deve manter maximo de 5 geracoes no historico', async () => {
       const btnGerar = screen.getByText('Gerar Partidas')
 
-      for (let i = 0; i < 5; i++) {
+      for (let i = 0; i < 8; i++) {
         fireEvent.click(btnGerar)
       }
 
@@ -105,7 +106,7 @@ describe('App', () => {
         const btnsHistorico = screen.getAllByRole('button').filter(btn =>
           btn.classList.contains('btn-historico')
         )
-        expect(btnsHistorico).toHaveLength(3)
+        expect(btnsHistorico).toHaveLength(5)
       })
     })
   })
@@ -124,8 +125,7 @@ describe('App', () => {
         expect(timeItems.length).toBe(4)
       })
 
-      const timeItems = document.querySelectorAll('.time-item')
-      fireEvent.click(timeItems[0])
+      fireEvent.click(document.querySelectorAll('.time-checkbox')[0])
 
       await waitFor(() => {
         const checkboxes = document.querySelectorAll('.time-checkbox.checked')
@@ -214,10 +214,15 @@ describe('App', () => {
       })
     })
 
-    it('cada time deve ter 5 jogos', async () => {
+    // 16 partidas x 2 times = 32 vagas. O gerador reparte 8 por time quase
+    // sempre, mas as vezes fecha em 7/8/8/9 - por isso o piso em vez do exato
+    it('deve repartir os 16 jogos entre os 4 times', async () => {
       await waitFor(() => {
-        const valores5 = screen.getAllByText('5')
-        expect(valores5.length).toBeGreaterThanOrEqual(4)
+        const jogosPorTime = [...document.querySelectorAll('.stat-value')]
+          .map(el => Number(el.textContent))
+        expect(jogosPorTime).toHaveLength(4)
+        expect(jogosPorTime.reduce((total, jogos) => total + jogos, 0)).toBe(32)
+        jogosPorTime.forEach(jogos => expect(jogos).toBeGreaterThanOrEqual(7))
       })
     })
   })

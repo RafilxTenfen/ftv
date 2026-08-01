@@ -5,7 +5,7 @@ import { shuffle } from './utils'
 export const DIREITOS_ARENA = [
   'João Ramirez',
   'Augusto',
-  'Rafuxo',
+  'Rafa',
   'Tiago',
   'Gui Floripa',
   'Gui'
